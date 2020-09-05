@@ -68,10 +68,27 @@ static NSString * const IS_AUDIO_DEVICE_CONNECTED = @"isAudioDeviceConnected";
 - (void) audioRouteChangeListenerCallback:(NSNotification*)notification
 {
     if (hasListeners) { // Only send events if anyone is listening
-        NSDictionary * res = [RNHeadphoneDetection isAudioDeviceConnected];
-        [self sendEventWithName:AUDIO_DEVICE_CHANGED_NOTIFICATION
+        NSDictionary *interuptionDict = notification.userInfo;
+        NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
+        
+        switch (routeChangeReason) {
+            case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
+            {
+                NSDictionary * res = [RNHeadphoneDetection isAudioDeviceConnected];
+                [self sendEventWithName:AUDIO_DEVICE_CHANGED_NOTIFICATION
                            body: res
-         ];
+                ];
+                break;
+            } 
+            case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
+            {
+                NSDictionary * res = [RNHeadphoneDetection isAudioDeviceConnected];
+                [self sendEventWithName:AUDIO_DEVICE_CHANGED_NOTIFICATION
+                           body: res
+                ];
+                break;
+            } 
+        }
     }
 }
 
